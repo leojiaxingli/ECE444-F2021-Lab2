@@ -7,7 +7,7 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 @app.route('/')
 def index():
-    return '<h1>Hello World!</h1>'
+    return render_template('index.html')
 @app.route('/user/<name>')
 def user(name):
     return render_template('user.html', name=name, current_time=datetime.utcnow())

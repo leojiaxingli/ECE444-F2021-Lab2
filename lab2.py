@@ -4,11 +4,13 @@ from flask_moment import Moment
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import Required
+from wtforms.fields.html5 import EmailField
+from wtforms.validators import Required, Email
 import os
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[Required()])
+    email = EmailField('What is your UofT email address?', validators=[Required(), Email()])
     submit = SubmitField('Submit')
 
 app = Flask(__name__)
@@ -20,13 +22,28 @@ moment = Moment(app)
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')        
+        old_name = session.get('name')
+        old_email = session.get('email')
+        
         if old_name is not None and old_name != form.name.data:
-            flash('Looks like you have changed your name!')        
+            flash('Looks like you have changed your name!')
             
-        session['name'] = form.name.data            
+        if old_email is not None and old_email != form.email.data:
+            flash('Looks like you have changed your email!')
+            
+        session['name'] = form.name.data
+        session['email'] = form.email.data
+            
         return redirect(url_for('index'))
-    return render_template('index.html', form = form, name = session.get('name'))
+    
+    email = session.get('email')
+    msg = None
+    if email is not None:
+        if email.endswith('utoronto.ca'):
+            msg = 'Your UofT email is ' + email
+        else:
+            msg = 'Please use your UofT email'
+    return render_template('index.html', form = form, name = session.get('name'), msg=msg)
     
 @app.route('/user/<name>')
 def user(name):
